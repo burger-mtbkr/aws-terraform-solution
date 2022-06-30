@@ -1,0 +1,341 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Jogday cloudformation template to create IAM user and KMS key",
+  "Resources": {
+    "ArtifactBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Description": "S3 Bucket where our lambda code will de deployed from",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ]
+      }
+    },
+    "JogDayIAMUser": {
+      "Type": "AWS::IAM::User",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "UserName": "JogDayIAMUser",
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ],
+        "Policies": [
+          {
+            "PolicyName": "S3AllowPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "LambdaAllowPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "SQSAllowPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "SNSAllowPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sns:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "6c2c6e53-9fd4-4501-8d78-ec876b9dd236"
+        }
+      }
+    },
+    "JogDayIAMRole": {
+      "Type": "AWS::IAM::Role",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ],
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "root",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sns:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                    "Resource": ["*"],
+                    "Action": [
+                        "kms:Decrypt",
+                        "kms:Encrypt"                      
+                    ],
+                    "Effect": "Allow"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }                          
+              ]
+            }
+          }                       
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "55516fb7-07de-48b6-a283-507941712eba"
+        }
+      }
+    },
+    "JogDayKMSKey": {
+      "Type": "AWS::KMS::Key",
+      "Description": "JogDay KMS Key",
+      "DependsOn": [
+        "JogDayIAMUser",
+        "JogDayIAMRole"
+      ],
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "Enabled": true,
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ],
+        "Description": "JogDay KMS Key",
+        "EnableKeyRotation": true,
+        "PendingWindowInDays": 7,
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Id": "key-JogDayKMKKey",
+          "Statement": [
+            {
+              "Sid": "Enable IAM User Permissions",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::313687599080:root"
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            },
+            {
+              "Sid": "Allow IAM user",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "JogDayIAMUser",
+                    "Arn"
+                  ]
+                }
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            },
+            {
+              "Sid": "Allow IAM role",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "JogDayIAMRole",
+                    "Arn"
+                  ]
+                }
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "StorageBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Description": "S3 Bucket where our data will be stored",
+      "DependsOn": [
+        "JogDayKMSKey"
+      ],
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ],
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "aws:kms",
+                "KMSMasterKeyID": {
+                  "Ref": "JogDayKMSKey"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "e20b9501-9703-42ca-8a02-bfa68f722308"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "JogDayIAMUserArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "JogDayIAMUser",
+          "Arn"
+        ]
+      }
+    },
+    "JogDayIAMRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "JogDayIAMRole",
+          "Arn"
+        ]
+      }
+    },
+    "JogDayKMSKeyArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "JogDayKMSKey",
+          "Arn"
+        ]
+      }
+    },
+    "ArtifactBucket": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ArtifactBucket",
+          "Arn"
+        ]
+      }
+    },
+    "StorageBucket": {
+      "Value": {
+        "Fn::GetAtt": [
+          "StorageBucket",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

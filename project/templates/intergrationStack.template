@@ -1,0 +1,201 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Template to create IntergrationQueue, IntergrationLambdaFunction, IntergrationQueueSubscription, lambdas, sqs and sns",
+  "Parameters": {
+    "ArtifactBucketName": {
+      "Type": "String"
+    },
+    "StorageBucketName": {
+      "Type": "String"
+    },
+    "JogDayTopicName": {
+      "Type": "String"
+    },
+    "JogDayIAMUserArn": {
+      "Type": "String"
+    },
+    "JogDayIAMRoleArn": {
+      "Type": "String"
+    },
+    "JogDayKMSKeyArn": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "IntergrationQueue": {
+      "Type": "AWS::SQS::Queue",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "QueueName": "IntergrationQueue",
+        "DelaySeconds" : 10,
+        "MessageRetentionPeriod" : 900,
+        "ReceiveMessageWaitTimeSeconds" : 20,
+        "VisibilityTimeout" :60,
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ]
+      }
+    },
+    "IntergrationQueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Description" : "Intergration Queue Policy",
+      "DependsOn" : "IntergrationQueue",
+      "DeletionPolicy" : "Delete",      
+      "Properties": {      
+        "Queues": [{ "Ref":"IntergrationQueue" }],        
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "sns.amazonaws.com"
+              },
+              "Action": [
+                "SQS:SendMessage",
+                "SQS:ReceiveMessage"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "IntergrationQueue",
+                  "Arn"
+                ]
+              },
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": {
+                    "Fn::Sub": "arn:aws:sns:${JogDayTopicName}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "IntergrationLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "IntergrationQueue"
+      ],
+      "Properties": {
+        "Runtime": "dotnetcore3.1",        
+        "FunctionName": "IntergrationFunction",
+        "Description": "Function that will receive a message from intergration sqs and send it to S3 storage bucket",
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ArtifactBucketName"
+          },
+          "S3Key": "IntergrationFunction.zip"
+        },
+        "Handler": "IntergrationFunction::IntergrationFunction.Function::FunctionHandler",
+        "Role": {
+          "Ref": "JogDayIAMRoleArn"
+        },
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ],
+        "Timeout": 60,
+        "KmsKeyArn": {
+          "Ref": "JogDayKMSKeyArn"
+        },
+        "Environment": {
+          "Variables": {
+            "QueueName": {
+              "Fn::GetAtt": [
+                "IntergrationQueue",
+                "QueueName"
+              ]
+            },
+            "StorageBucketName": {
+              "Ref": "StorageBucketName"
+            }
+          }
+        }
+      }
+    },
+    "IntergrationLambdaFunctionInvokePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "IntergrationLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": {
+          "Ref": "JogDayIAMUserArn"
+        },
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        }
+      }
+    },
+    "IntergrationLambdaEventSourceMapping": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "IntergrationLambdaFunction",
+        "IntergrationQueue"
+      ],
+      "Properties": {
+        "BatchSize": 1,
+        "Enabled": true,
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "IntergrationQueue",
+            "Arn"
+          ]
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "IntergrationLambdaFunction",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "JogDaySQSSubscription": {
+      "Type": "AWS::SNS::Subscription",
+      "DependsOn": [
+        "IntergrationQueue"
+      ],
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "TopicArn": {
+          "Fn::Sub": "arn:aws:sns:${JogDayTopicName}"
+        },
+        "Protocol": "sqs",
+        "Endpoint": {
+          "Fn::GetAtt": [
+            "IntergrationQueue",
+            "Arn"
+          ]
+        },
+        "RawMessageDelivery": true
+      }
+    },
+    "JogDaySMSSubscription": {
+      "Type": "AWS::SNS::Subscription",
+      "DependsOn": [
+        "IntergrationQueue"
+      ],
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "TopicArn": {
+          "Fn::Sub": "arn:aws:sns:${JogDayTopicName}"
+        },
+        "Protocol": "sms",
+        "Endpoint": "+64211034226"
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+
+{
+    "Information" : [
+        "This file provides default values for the deployment wizard inside Visual Studio and the AWS Lambda commands added to the .NET Core CLI.",
+        "To learn more about the Lambda commands with the .NET Core CLI execute the following command at the command line in the project root directory.",
+        "dotnet lambda help",
+        "All the command line options for the Lambda command can be specified in this file."
+    ],
+    "profile"     : "loan_Administrator",
+    "region"      : "ap-southeast-2",
+    "configuration" : "Release",
+    "framework"     : "netcoreapp3.1",
+    "function-runtime" : "dotnetcore3.1",
+    "function-memory-size" : 256,
+    "function-timeout"     : 30,
+    "function-handler"     : "ProcessorFunction::ProcessorFunction.Function::FunctionHandler",
+    "function-name"        : "ProcessorFunction",
+    "function-role"        : "arn:aws:iam::313687599080:role/iam-stack-JogDayIAMRole-5WPMBHM85932",
+    "dead-letter-target-arn" : "arn:aws:sqs:ap-southeast-2:313687599080:main-stack-DLQ-ERXCOK00GV3D",
+    "tracing-mode"           : "PassThrough",
+    "environment-variables"  : "",
+    "kms-key"                : "arn:aws:kms:ap-southeast-2:313687599080:key/3519e639-4cc7-42b1-8389-2528be16a1ce"
+}

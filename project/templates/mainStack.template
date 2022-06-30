@@ -1,0 +1,315 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Template to create Queue, DLQ, Creator Lambda, Processor Lambda and SNS",
+  "Parameters": {
+    "ArtifactBucketName": {
+      "Type": "String"
+    },
+    "StorageBucketArn": {
+      "Type": "String"
+    },
+    "JogDayIAMUserArn": {
+      "Type": "String"
+    },
+    "JogDayIAMRoleArn": {
+      "Type": "String"
+    },
+    "JogDayKMSKeyArn": {
+      "Type": "String"
+    }
+  },
+  "Resources": {  
+    "DLQ": {
+      "Type": "AWS::SQS::Queue",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "KmsMasterKeyId": {
+          "Ref": "JogDayKMSKeyArn"
+        }
+      }
+    },
+    "Queue": {
+      "Type": "AWS::SQS::Queue",
+      "DeletionPolicy": "Delete",
+      "DependsOn": "DLQ",
+      "Properties": {
+        "QueueName": "JogDayQueue",        
+        "ReceiveMessageWaitTimeSeconds" : 20,
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": [
+              "DLQ",
+              "Arn"
+            ]
+          },
+          "maxReceiveCount" : 3
+        },
+        "KmsMasterKeyId": {
+          "Ref": "JogDayKMSKeyArn"
+        },
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ]
+      }
+    },
+    "QueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Description" : "Queue Policy",
+      "DependsOn" : "Queue",
+      "DeletionPolicy" : "Delete",         
+      "Properties": {      
+        "Queues": [{ "Ref":"Queue" }],        
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",              
+              "Principal": {              
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+                 "Action": [
+                    "lambda:*"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "CreatorLambdaFunction",
+                  "Arn"
+                ]
+              }        
+            }
+          ]
+        }
+      }
+    },
+    "JogDayTopic": {
+      "Type": "AWS::SNS::Topic",      
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "DisplayName": "JogDay topic",
+        "KmsMasterKeyId" : {"Ref":"JogDayKMSKeyArn"},        
+        "TopicName" : "JogDayEmailTopic",      
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ]
+      }
+    },
+    "JogDayEmailSubscription": {
+      "Type": "AWS::SNS::Subscription",      
+      "DeletionPolicy": "Delete",
+      "Properties": {      
+        "TopicArn": {
+          "Ref": "JogDayTopic"
+        },
+        "Endpoint": "loan.burger@gmail.com",
+        "Protocol": "email"
+      },
+      "DependsOn": [
+        "JogDayTopic"
+      ]
+    },
+    "CreatorLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DeletionPolicy": "Delete",    
+      "Properties": {
+        "Runtime": "dotnetcore3.1",
+        "FunctionName": "CreatorFunction",
+        "Description": "Function that will take a message and send it to a SQS queue",
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ArtifactBucketName"
+          },
+          "S3Key": "CreatorFunction.zip"
+        },
+        "Handler": "CreatorFunction::CreatorFunction.Function::FunctionHandler",
+        "Role": { "Ref": "JogDayIAMRoleArn" },
+        "DeadLetterConfig": {
+          "TargetArn": {
+            "Fn::GetAtt": [
+              "DLQ",
+              "Arn"
+            ]
+          }
+        },        
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ],
+        "Timeout": 20,    
+        "MemorySize": 256,
+        "KmsKeyArn": {
+          "Ref": "JogDayKMSKeyArn"
+        },
+        "Environment": {
+          "Variables": {
+            "QueueName": {
+              "Fn::GetAtt": [
+                "Queue",
+                "QueueName"
+              ]
+            },
+            "DLQName": {
+              "Fn::GetAtt": [
+                "DLQ",
+                "QueueName"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "CreatorLambdaFunctionInvokePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreatorLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": {
+          "Ref": "JogDayIAMUserArn"
+        },
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        }
+      }
+    },
+    "ProcessorLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DeletionPolicy": "Delete",    
+      "DependsOn" : ["Queue","DLQ","JogDayTopic"],
+      "Properties": {
+        "Runtime": "dotnetcore3.1",
+        "FunctionName": "ProcessorFunction",
+        "Description": "Function that will receive a message from sqs and send it to sns",
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ArtifactBucketName"
+          },
+          "S3Key": "ProcessorFunction.zip"
+        },
+        "Handler": "ProcessorFunction::ProcessorFunction.Function::FunctionHandler",        
+        "Role": { "Ref": "JogDayIAMRoleArn" },
+        "DeadLetterConfig": {
+          "TargetArn": {
+            "Fn::GetAtt": [
+              "DLQ",
+              "Arn"
+            ]
+          }
+        },        
+        "Tags": [
+          {
+            "Key": "jogday",
+            "Value": "jogday"
+          }
+        ],
+        "Timeout": 20,    
+        "MemorySize": 256,
+        "KmsKeyArn": {
+          "Ref": "JogDayKMSKeyArn"
+        },
+        "Environment": {
+          "Variables": {
+            "QueueName": {
+              "Fn::GetAtt": [
+                "Queue",
+                "QueueName"
+              ]
+            },
+            "DLQName": {
+              "Fn::GetAtt": [
+                "DLQ",
+                "QueueName"
+              ]
+            },
+            "JogDayTopicArn": {"Ref" : "JogDayTopic" },         
+            "JogDayTopicName": {
+              "Fn::GetAtt": [
+                "JogDayTopic",
+                "TopicName"
+              ]
+            }       
+          }
+        }
+      }
+    },
+    "ProcessorLambdaFunctionInvokePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ProcessorLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": {
+          "Ref": "JogDayIAMUserArn"
+        },
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        }
+      }
+    },
+    "ProcessorLambdaEventSourceMapping": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "DeletionPolicy": "Delete",
+      "DependsOn": ["ProcessorLambdaFunction","Queue"],
+      "Properties": {
+       "BatchSize" : 1,     
+       "Enabled" : true,
+       "EventSourceArn" : {
+          "Fn::GetAtt": [
+            "Queue",
+            "Arn"
+          ]
+        },
+        "FunctionName" : {
+          "Fn::GetAtt": [
+            "ProcessorLambdaFunction",
+            "Arn"
+          ]
+        }     
+      }
+    }
+  },
+  "Outputs": {
+    "QueueArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Queue",
+          "Arn"
+        ]
+      }
+    },
+    "DLQArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "DLQ",
+          "Arn"
+        ]
+      }
+    },
+    "JogDayTopicName":{
+     "Value": {
+        "Fn::GetAtt": [
+          "JogDayTopic",
+          "TopicName"
+        ]
+      }
+    }
+  }
+}
