@@ -1,6 +1,6 @@
 variable "region" {
   type        = string
-  description = "Jogday"
+  description = "Jogday region"
   default     = "ap-southeast-2"
 }
 

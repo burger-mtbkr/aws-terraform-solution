@@ -22,7 +22,7 @@ data "aws_iam_policy_document" "s3_bucket_policy_doc" {
   }
 }
 
-# S3 bucket polic
+# S3 bucket policy
 resource "aws_iam_policy" "bucket_policy" {
   name        = var.jogday_s3_policy_name
   description = "S3 policy"
