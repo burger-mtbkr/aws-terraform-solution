@@ -12,3 +12,8 @@ output "aws_iam_role_arn" {
   description = "Jogday iam role arn"
   value       = aws_iam_role.jogday_iam_role.arn
 }
+
+output "jogday_kms_key_arn" {
+  value       = aws_kms_key.jogday_kms_key.arn
+  description = "Jogday kms key arn"
+}

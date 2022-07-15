@@ -1,5 +1,7 @@
 
-# jogday user creation
+# IAM User Creation with Policies
+# Examples: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user
+
 resource "aws_iam_user" "jogday_iam_user" {
   name = var.jogday_iam_user_name
   tags = {

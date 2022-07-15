@@ -66,18 +66,24 @@ variable "jogday_iam_role_sns_policy_name" {
 
 variable "jogday_iam_role_sqs_policy_name" {
   type        = string
-  description = "Jogday iam role sqs_policy name"
+  description = "Jogday IAM role sqs_policy name"
   default     = "sqs_policy"
 }
 
 variable "jogday_iam_role_lambda_policy_name" {
   type        = string
-  description = "Jogday iam role lambda_policy name"
+  description = "Jogday IAM role lambda_policy name"
   default     = "lambda_policy"
 }
 
 variable "jogday_iam_role_kms_policy_name" {
   type        = string
-  description = "Jogday iam role kms_policy name"
+  description = "Jogday IAM role kms_policy name"
+  default     = "kms_policy"
+}
+
+variable "jogday_kms_policy_name" {
+  type        = string
+  description = "Jogday IAM kms_policy name"
   default     = "kms_policy"
 }

@@ -1,3 +1,5 @@
+# IAM Role Creation with Policies
+# Examples: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
 
 data "aws_iam_policy_document" "jogday_iam_role_assume_policy" {
   statement {
@@ -71,8 +73,6 @@ data "aws_iam_policy_document" "kms_policy_doc" {
   }
 }
 
-# jogday iam role creation
-# Examples: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role
 resource "aws_iam_role" "jogday_iam_role" {
   name               = var.jogday_iam_role_name
   assume_role_policy = data.aws_iam_policy_document.jogday_iam_role_assume_policy.json
