@@ -4,9 +4,9 @@
 
 data "aws_iam_policy_document" "aws_kms_iam_policy_doc" {
   statement {
-    effect     = "Allow"
-    actions    = ["kms:*"]
-    resources  = ["*"]
+    effect    = "Allow"
+    actions   = ["kms:*"]
+    resources = ["*"]
     principals {
       type        = "AWS"
       identifiers = ["arn:aws:iam::313687599080:root", aws_iam_role.jogday_iam_role.arn, aws_iam_user.jogday_iam_user.arn]
