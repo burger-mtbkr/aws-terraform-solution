@@ -18,7 +18,7 @@
       "Type": "String"
     }
   },
-  "Resources": {  
+  "Resources": {
     "DLQ": {
       "Type": "AWS::SQS::Queue",
       "DeletionPolicy": "Delete",
@@ -33,7 +33,7 @@
       "DeletionPolicy": "Delete",
       "DependsOn": "DLQ",
       "Properties": {
-        "QueueName": "JogDayQueue",        
+        "QueueName": "JogDayQueue",
         "ReceiveMessageWaitTimeSeconds" : 20,
         "RedrivePolicy": {
           "deadLetterTargetArn": {
@@ -60,13 +60,13 @@
       "Description" : "Queue Policy",
       "DependsOn" : "Queue",
       "DeletionPolicy" : "Delete",         
-      "Properties": {      
-        "Queues": [{ "Ref":"Queue" }],        
+      "Properties": {
+        "Queues": [{ "Ref":"Queue" }],
         "PolicyDocument": {
           "Statement": [
             {
-              "Effect": "Allow",              
-              "Principal": {              
+              "Effect": "Allow",
+              "Principal": {
                 "Service": [
                   "lambda.amazonaws.com"
                 ]
@@ -79,7 +79,7 @@
                   "CreatorLambdaFunction",
                   "Arn"
                 ]
-              }        
+              }
             }
           ]
         }
@@ -90,8 +90,8 @@
       "DeletionPolicy": "Delete",
       "Properties": {
         "DisplayName": "JogDay topic",
-        "KmsMasterKeyId" : {"Ref":"JogDayKMSKeyArn"},        
-        "TopicName" : "JogDayEmailTopic",      
+        "KmsMasterKeyId" : {"Ref":"JogDayKMSKeyArn"},
+        "TopicName" : "JogDayEmailTopic",
         "Tags": [
           {
             "Key": "jogday",

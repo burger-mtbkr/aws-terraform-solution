@@ -8,3 +8,10 @@ resource "aws_s3_bucket" "artifactbucket" {
     Name = var.jogday_tag
   }
 }
+
+resource "aws_s3_bucket" "storagebucket" {
+  bucket = var.storagebucket_name
+  tags = {
+    Name = var.jogday_tag
+  }
+}
