@@ -39,14 +39,11 @@ variable "jogday_iam_user_name" {
   default     = "jogday_iam_user"
 }
 
-
-
 variable "jogday_lambda_policy_name" {
   type        = string
   description = "LambdaPolicy policy name"
   default     = "lambda_policy"
 }
-
 
 variable "jogday_sns_policy_name" {
   type        = string
@@ -138,4 +135,12 @@ variable "receive_wait_time_seconds" {
   type        = number
   default     = 20
   description = "Time (in seconds) that messages will be received"
+}
+
+# SNS
+
+variable "jogday_sns_email_topic_name" {
+  type        = string
+  description = "Jogday SNS Email Topic name"
+  default     = "JogDayEmailTopic"
 }

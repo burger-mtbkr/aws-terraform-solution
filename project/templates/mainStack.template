@@ -18,7 +18,7 @@
       "Type": "String"
     }
   },
-  "Resources": {  
+  "Resources": {
     "DLQ": {
       "Type": "AWS::SQS::Queue",
       "DeletionPolicy": "Delete",
@@ -90,8 +90,8 @@
       "DeletionPolicy": "Delete",
       "Properties": {
         "DisplayName": "JogDay topic",
-        "KmsMasterKeyId" : {"Ref":"JogDayKMSKeyArn"},        
-        "TopicName" : "JogDayEmailTopic",      
+        "KmsMasterKeyId" : {"Ref":"JogDayKMSKeyArn"},
+        "TopicName" : "JogDayEmailTopic",
         "Tags": [
           {
             "Key": "jogday",

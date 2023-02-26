@@ -4,7 +4,7 @@ resource "aws_sqs_queue" "jogday_queue" {
   name                       = var.jogday_queue_name
   message_retention_seconds  = var.retention_period
   visibility_timeout_seconds = var.visibility_timeout
-  receive_wait_time_seconds = var.receive_wait_time_seconds
+  receive_wait_time_seconds  = var.receive_wait_time_seconds
   redrive_policy = jsonencode({
     "deadLetterTargetArn" = aws_sqs_queue.deadletter_queue.arn,
     "maxReceiveCount"     = var.receive_count
