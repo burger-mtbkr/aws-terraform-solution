@@ -4,8 +4,14 @@ variable "region" {
   default     = "ap-southeast-2"
 }
 
-variable "jogday_tag" {
-  type        = string
-  description = "Jogday Tag"
-  default     = "jogday"
+variable "jogday_tags" {
+  description = "Tags for resource tracking"
+  type = object({
+    name       = string
+    created-by = string
+  })
+  default = {
+    name       = "jogday"
+    created-by = "LPB"
+  }
 }

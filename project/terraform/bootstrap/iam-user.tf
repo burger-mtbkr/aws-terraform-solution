@@ -4,9 +4,7 @@
 
 resource "aws_iam_user" "jogday_iam_user" {
   name = var.jogday_iam_user_name
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags = var.jogday_tags
 }
 
 #############################################################################
@@ -29,9 +27,7 @@ resource "aws_iam_policy" "bucket_policy" {
   name        = var.jogday_s3_policy_name
   description = "S3 policy"
   policy      = data.aws_iam_policy_document.s3_bucket_policy_doc.json
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags        = var.jogday_tags
 }
 
 # Attaching "bucket_policy" policy to the user
@@ -61,9 +57,7 @@ resource "aws_iam_policy" "lambda_policy" {
   name        = var.jogday_lambda_policy_name
   description = "Lambda policy"
   policy      = data.aws_iam_policy_document.lambda_bucket_policy_doc.json
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags        = var.jogday_tags
 }
 
 # Attaching "lambda_policy" policy to the user
@@ -93,9 +87,7 @@ resource "aws_iam_policy" "sqs_policy" {
   name        = var.jogday_sqs_policy_name
   description = "SQS policy"
   policy      = data.aws_iam_policy_document.sqs_bucket_policy_doc.json
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags        = var.jogday_tags
 }
 
 # Attaching "sqs_policy" policy to the user
@@ -125,9 +117,7 @@ resource "aws_iam_policy" "sns_policy" {
   name        = var.jogday_sns_policy_name
   description = "SNS policy"
   policy      = data.aws_iam_policy_document.sns_bucket_policy_doc.json
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags        = var.jogday_tags
 }
 
 # Attaching "sns_policy" policy to the user

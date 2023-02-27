@@ -4,14 +4,10 @@
 
 resource "aws_s3_bucket" "artifactbucket" {
   bucket = var.artifactbucket_name
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags   = var.jogday_tags
 }
 
 resource "aws_s3_bucket" "storagebucket" {
   bucket = var.storagebucket_name
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags   = var.jogday_tags
 }

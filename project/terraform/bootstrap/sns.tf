@@ -3,9 +3,7 @@
 
 resource "aws_sns_topic" "jogday_sns_email_topic" {
   name = var.jogday_sns_email_topic_name
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags = var.jogday_tags
 }
 
 # SNS subscription to above topic

@@ -9,9 +9,7 @@ resource "aws_sqs_queue" "jogday_queue" {
     "deadLetterTargetArn" = aws_sqs_queue.deadletter_queue.arn,
     "maxReceiveCount"     = var.receive_count
   })
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags = var.jogday_tags
 }
 
 # DQL
@@ -20,9 +18,7 @@ resource "aws_sqs_queue" "deadletter_queue" {
   name                       = var.jogday_dlq_queue_name
   message_retention_seconds  = var.retention_period
   visibility_timeout_seconds = var.visibility_timeout
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags                       = var.jogday_tags
 }
 
 ##
@@ -76,9 +72,7 @@ resource "aws_iam_policy" "consumer_policy" {
     "Version"   = "2012-10-17",
     "Statement" = [local.consumer_policy_statement]
   })
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags = var.jogday_tags
 }
 
 
@@ -89,7 +83,5 @@ resource "aws_iam_policy" "producer_policy" {
     "Version"   = "2012-10-17",
     "Statement" = [local.producer_policy_statement]
   })
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags = var.jogday_tags
 }

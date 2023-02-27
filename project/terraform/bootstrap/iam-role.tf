@@ -96,8 +96,6 @@ resource "aws_iam_role" "jogday_iam_role" {
     name   = var.jogday_iam_role_kms_policy_name
     policy = data.aws_iam_policy_document.kms_policy_doc.json
   }
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags = var.jogday_tags
 }
 

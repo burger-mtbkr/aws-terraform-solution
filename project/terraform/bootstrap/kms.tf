@@ -22,7 +22,5 @@ resource "aws_kms_key" "jogday_kms_key" {
   is_enabled              = true
   enable_key_rotation     = true
   policy                  = data.aws_iam_policy_document.aws_kms_iam_policy_doc.json
-  tags = {
-    Name = var.jogday_tag
-  }
+  tags                    = var.jogday_tags
 }
