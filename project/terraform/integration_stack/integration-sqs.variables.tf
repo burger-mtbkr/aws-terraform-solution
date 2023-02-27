@@ -1,27 +1,13 @@
-# SQS
-
-variable "jogday_sqs_policy_name" {
-  type        = string
-  description = "SQSPolicy policy name"
-  default     = "sqs_policy"
-}
-
 variable "retention_period" {
   description = "Time (in seconds) that messages will remain in queue before being purged"
   type        = number
   default     = 86400
 }
 
-variable "jogday_queue_name" {
+variable "jogday_integration_queue_name" {
   type        = string
-  description = "Jogday Main Queue name"
-  default     = "JogDayQueue"
-}
-
-variable "jogday_dlq_queue_name" {
-  type        = string
-  description = "Jogday Dead Letter Queue name"
-  default     = "DLQ"
+  description = "Jogday Integration Queue name"
+  default     = "JogDayIntergrationQueue"
 }
 
 variable "visibility_timeout" {

@@ -126,3 +126,4 @@ resource "aws_iam_user_policy_attachment" "user-sns-policy-relationship" {
   user       = aws_iam_user.jogday_iam_user.id
   policy_arn = aws_iam_policy.sns_policy.arn
 }
+

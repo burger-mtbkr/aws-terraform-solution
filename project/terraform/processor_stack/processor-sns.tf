@@ -1,6 +1,3 @@
-
-# SNS topic
-
 resource "aws_sns_topic" "jogday_sns_email_topic" {
   name = var.jogday_sns_email_topic_name
   tags = var.jogday_tags
