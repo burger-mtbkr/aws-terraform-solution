@@ -116,7 +116,7 @@
     },
     "CreatorLambdaFunction": {
       "Type": "AWS::Lambda::Function",
-      "DeletionPolicy": "Delete",    
+      "DeletionPolicy": "Delete",
       "Properties": {
         "Runtime": "dotnetcore3.1",
         "FunctionName": "CreatorFunction",

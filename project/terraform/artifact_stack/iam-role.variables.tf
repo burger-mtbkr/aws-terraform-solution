@@ -1,23 +1,3 @@
-# IAM Vars
-
-variable "jogday_iam_user_name" {
-  type        = string
-  description = "Jogday iam user name"
-  default     = "jogday_iam_user"
-}
-
-variable "jogday_lambda_policy_name" {
-  type        = string
-  description = "LambdaPolicy policy name"
-  default     = "lambda_policy"
-}
-
-variable "jogday_sns_policy_name" {
-  type        = string
-  description = "SNSPolicy policy name"
-  default     = "sns_policy"
-}
-
 variable "jogday_iam_role_name" {
   type        = string
   description = "Jogday iam role name"
@@ -51,11 +31,5 @@ variable "jogday_iam_role_lambda_policy_name" {
 variable "jogday_iam_role_kms_policy_name" {
   type        = string
   description = "Jogday IAM role kms_policy name"
-  default     = "kms_policy"
-}
-
-variable "jogday_kms_policy_name" {
-  type        = string
-  description = "Jogday IAM kms_policy name"
   default     = "kms_policy"
 }
